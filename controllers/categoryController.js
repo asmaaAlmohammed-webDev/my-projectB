@@ -1,0 +1,9 @@
+const Category = require('../models/categoryModel');
+const AppError = require('../utils/appError');
+const handlerFactory = require('../utils/handlerFactory');
+const catchAsync = require('../utils/catchAsync');
+exports.getCategory = handlerFactory.getOne(Category);
+exports.createCategory = handlerFactory.createOne(Category);
+exports.updateCategory = handlerFactory.updateOne(Category);
+exports.deleteCategory = handlerFactory.deleteOne(Category);
+exports.getAllCategory = handlerFactory.getAll(Category);

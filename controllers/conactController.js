@@ -1,0 +1,9 @@
+const Conact = require('../models/conactModel');
+const AppError = require('../utils/appError');
+const handlerFactory = require('../utils/handlerFactory');
+const catchAsync = require('../utils/catchAsync');
+exports.getConact = handlerFactory.getOne(Conact);
+exports.createConact = handlerFactory.createOne(Conact);
+exports.updateConact = handlerFactory.updateOne(Conact);
+exports.deleteConact = handlerFactory.deleteOne(Conact);
+exports.getAllConact = handlerFactory.getAll(Conact);
