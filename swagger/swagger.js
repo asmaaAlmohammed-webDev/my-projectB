@@ -1,5 +1,10 @@
 const swaggerJsDoc = require('swagger-jsdoc');
 const {
+  Review,
+  createReview,
+  updateReview,
+} = require('./routes/reviewSwagger');
+const {
   Conact,
   createConact,
   updateConact,
@@ -43,6 +48,9 @@ const options = {
     ],
     components: {
       schemas: {
+        Review,
+        createReview,
+        updateReview,
         Conact,
         createConact,
         updateConact,
