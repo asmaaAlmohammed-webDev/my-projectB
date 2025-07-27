@@ -9,11 +9,11 @@ router.use(protect);
 router
   .route('/')
   .get(restrictTo(USER, ADMIN), orderController.getAllOrder)
-  .post(restrictTo(USER),addVarBody("userId","userId"), orderController.createOrder);
+  .post(restrictTo(USER, ADMIN), addVarBody("userId","userId"), orderController.createOrder); // FIXED: Allow both USER and ADMIN to create orders
 router
  .route('/mien')
   .get(
-    restrictTo(USER),
+    restrictTo(USER, ADMIN), // FIXED: Allow both USER and ADMIN to access their orders
     addQuery('userId', 'userId'),
     orderController.getAllOrder,
   );

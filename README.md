@@ -56,9 +56,60 @@ The "compression" library is used to enable gzip compression of the server's res
 
 The project includes robust error handling mechanisms to gracefully handle and report errors. It implements error logging and provides informative error messages to aid in debugging and troubleshooting. The application may handle errors using try-catch blocks, error middleware, or error-handling frameworks.
 
-## Database Seed
+## Database Seeding
 
-- create an admin user in the database
+This project uses a unified seeding approach to populate the database with comprehensive test data for all features.
+
+### Available Seed Commands
+
+#### `npm run seed:all` (Recommended)
+Runs the comprehensive seeder that creates all data in the correct order:
+
+- **Admin User**: 1 admin account for testing admin features
+- **Sample Users**: 4 regular users for testing user interactions
+- **Categories**: 8 book categories (Fiction, Romance, Mystery, etc.)
+- **Products**: 12 books linked to categories
+- **Orders**: 8 sample orders with various statuses
+- **Reviews**: 12 user reviews with ratings 1-5 stars
+- **Contact Requests**: 10 contact form submissions
+
+#### `npm run seed:basic`
+Runs the basic seeder (`seeds.js`) that only creates minimal data.
+
+### What Gets Created
+
+#### Admin Dashboard Data
+The unified seeder creates realistic data for all admin features:
+
+1. **Categories Management**: 8 diverse book categories
+2. **Products Management**: 12 books with descriptions, prices, and category links
+3. **Orders Management**: 8 orders with different statuses (waiting, preparing, delivery, done)
+4. **Reviews Management**: 12 customer reviews with star ratings
+5. **Users Management**: 4 sample users + 1 admin
+6. **Requests Management**: 10 contact form submissions with timestamps
+
+#### Statistics Generated
+- Order status distribution across all states
+- Review ratings from 1-5 stars with average calculation
+- Revenue calculation from completed orders
+- Timestamp-based data for analytics
+
+### Usage
+
+1. **Fresh Setup**: Run `npm run seed:all` to populate everything
+2. **Development**: Use the same command to reset and refresh all data
+3. **Testing**: Data includes realistic edge cases and variety
+
+### Files
+
+- `unified-seeder.js`: Comprehensive seeder with all data and relationships
+- `seeds.js`: Basic seeder (admin user only - kept for legacy/minimal setups)
+
+The unified approach ensures:
+- ✅ Proper data relationships between models
+- ✅ Realistic data for frontend testing
+- ✅ Complete admin feature coverage
+- ✅ Consistent data across development team
 
 ## Install
 
@@ -101,14 +152,6 @@ This guide explains how to set up an `.env` file to configure environment variab
     ```
 
 Update all variables in the `.env` file with your own values:
-
-## Database Seed
-
-- create an admin user in the database by
-
-```
-$ npm run seed:dev
-```
 
 
 ## Create document by hygen library

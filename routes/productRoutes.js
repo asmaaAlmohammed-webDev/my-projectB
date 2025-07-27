@@ -4,14 +4,18 @@ const { RoleCode } = require('./../utils/enum');
 const { USER, ADMIN } = RoleCode;
 const express = require('express');
 const router = express.Router();
-router.use(protect);
+
+// CHANGED: Make product browsing public for e-commerce functionality
+// Users should be able to view products without being logged in
 router
   .route('/')
-  .get(restrictTo(USER, ADMIN), productController.getAllProduct)
-  .post(restrictTo(ADMIN), productController.createProduct);
+  .get(productController.getAllProduct) // CHANGED: Removed authentication requirement for browsing
+  .post(protect, restrictTo(ADMIN), productController.createProduct); // Keep admin protection for creation
+
 router
   .route('/:id')
-  .get(restrictTo(USER, ADMIN), productController.getProduct)
-  .patch(restrictTo(ADMIN), productController.updateProduct)
-  .delete(restrictTo(ADMIN), productController.deleteProduct);
+  .get(productController.getProduct) // CHANGED: Removed authentication requirement for viewing single product
+  .patch(protect, restrictTo(ADMIN), productController.updateProduct) // Keep admin protection
+  .delete(protect, restrictTo(ADMIN), productController.deleteProduct); // Keep admin protection
+
 module.exports = router;
