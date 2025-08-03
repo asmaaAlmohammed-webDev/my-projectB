@@ -112,14 +112,14 @@ const productsTemplate = [
     name: 'The Great Gatsby',
     description: 'A classic American novel set in the Jazz Age',
     price: 15.99,
-    image: 'gatsby.jpg',
+    image: 'book_1.png',
     categoryName: 'Fiction'
   },
   {
     name: 'To Kill a Mockingbird',
     description: 'A powerful story of racial injustice and childhood',
     price: 14.50,
-    image: 'mockingbird.jpg',
+    image: 'book_2.png',
     categoryName: 'Fiction'
   },
   // Romance Books
@@ -127,14 +127,14 @@ const productsTemplate = [
     name: 'Pride and Prejudice',
     description: 'Jane Austen\'s beloved romantic classic',
     price: 12.99,
-    image: 'pride-prejudice.jpg',
+    image: 'book_3.png',
     categoryName: 'Romance'
   },
   {
     name: 'The Notebook',
     description: 'A touching love story that spans decades',
     price: 13.75,
-    image: 'notebook.jpg',
+    image: 'book_4.png',
     categoryName: 'Romance'
   },
   // Mystery Books
@@ -142,14 +142,14 @@ const productsTemplate = [
     name: 'The Girl with the Dragon Tattoo',
     description: 'A gripping Swedish crime thriller',
     price: 16.99,
-    image: 'dragon-tattoo.jpg',
+    image: 'book_5.png',
     categoryName: 'Mystery'
   },
   {
     name: 'Gone Girl',
     description: 'A psychological thriller about a missing wife',
     price: 15.25,
-    image: 'gone-girl.jpg',
+    image: 'book_6.png',
     categoryName: 'Mystery'
   },
   // Science Fiction Books
@@ -157,14 +157,14 @@ const productsTemplate = [
     name: 'Dune',
     description: 'Epic space opera set on the desert planet Arrakis',
     price: 18.99,
-    image: 'dune.jpg',
+    image: 'book_7.png',
     categoryName: 'Science Fiction'
   },
   {
     name: 'The Martian',
     description: 'Survival story of an astronaut stranded on Mars',
     price: 14.99,
-    image: 'martian.jpg',
+    image: 'book_8.png',
     categoryName: 'Science Fiction'
   },
   // Biography Books
@@ -172,14 +172,14 @@ const productsTemplate = [
     name: 'Steve Jobs',
     description: 'The official biography of Apple\'s co-founder',
     price: 19.99,
-    image: 'steve-jobs.jpg',
+    image: 'book_9.png',
     categoryName: 'Biography'
   },
   {
     name: 'Becoming',
     description: 'Michelle Obama\'s inspiring memoir',
     price: 17.50,
-    image: 'becoming.jpg',
+    image: 'book_10.png',
     categoryName: 'Biography'
   },
   // Technology Books
@@ -187,14 +187,14 @@ const productsTemplate = [
     name: 'Clean Code',
     description: 'A handbook of agile software craftsmanship',
     price: 24.99,
-    image: 'clean-code.jpg',
+    image: 'book_11.png',
     categoryName: 'Technology'
   },
   {
     name: 'The Pragmatic Programmer',
     description: 'Your journey to mastery in programming',
     price: 22.75,
-    image: 'pragmatic-programmer.jpg',
+    image: 'book_12.png',
     categoryName: 'Technology'
   }
 ];
@@ -334,9 +334,14 @@ async function seedAllData() {
     const adminUser = await User.create(admin);
     console.log(`✅ Admin created: ${adminUser.email}`);
 
-    // 3. Create Sample Users
+    // 3. Create Sample Users (one by one to trigger password hashing)
     console.log('\n👥 Creating sample users...');
-    const users = await User.insertMany(sampleUsers);
+    const users = [];
+    for (const userData of sampleUsers) {
+      const user = await User.create(userData);
+      users.push(user);
+      console.log(`   ✅ Created user: ${user.email}`);
+    }
     console.log(`✅ Created ${users.length} sample users`);
 
     // 4. Create Categories

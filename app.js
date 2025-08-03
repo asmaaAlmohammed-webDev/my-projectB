@@ -19,7 +19,12 @@ const app = express();
 // 1) GLOBAL MIDDLEWARES
 // Implement CORS
 //سماح للمواقع من الاتصال بالخدمة
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Frontend development server
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 //تحديد المواقع المسموح لها بالاتصال
 // في حال وجود اكثر من موقع يتم تمرير مصفوفة بعناوين المواقع
 // app.use(cors({
@@ -32,7 +37,18 @@ app.options('*', cors());
 
 // Set security HTTP headers
 //مكتبة لحماية الموقع في حال الرفع على استضافة
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allow cross-origin resource sharing
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"], // Allow images from any source
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https:", "http:"],
+    },
+  },
+}));
 
 // Development logging
 //تتبع الطلبات في وضعية التطوير
