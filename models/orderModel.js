@@ -63,7 +63,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'cart.productId',
-    select: '-_id',
+    select: 'name description price _id', // Include _id field
   });
   next();
 });
@@ -71,7 +71,7 @@ orderSchema.pre(/^find/, function (next) {
 orderSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'userId',
-    select: '-_id',
+    select: 'name email phone _id role', // Include _id field
   });
   next();
 });

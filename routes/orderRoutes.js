@@ -22,4 +22,14 @@ router
   .get(restrictTo(USER, ADMIN), orderController.getOrder)
   .patch(restrictTo(ADMIN), orderController.updateOrder)
   .delete(restrictTo(ADMIN), orderController.deleteOrder);
+
+// Invoice routes
+router
+  .route('/:id/invoice')
+  .get(restrictTo(USER, ADMIN), orderController.downloadInvoice);
+
+router
+  .route('/:id/invoice/preview')
+  .get(restrictTo(USER, ADMIN), orderController.previewInvoice);
+
 module.exports = router;
