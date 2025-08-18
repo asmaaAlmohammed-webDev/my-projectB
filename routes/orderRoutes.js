@@ -26,10 +26,6 @@ router
 // Invoice routes
 router
   .route('/:id/invoice')
-  .get(restrictTo(USER, ADMIN), orderController.downloadInvoice);
-
-router
-  .route('/:id/invoice/preview')
-  .get(restrictTo(USER, ADMIN), orderController.previewInvoice);
+  .get(restrictTo(USER, ADMIN), orderController.getOrderInvoiceHTML);
 
 module.exports = router;
