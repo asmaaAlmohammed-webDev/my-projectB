@@ -430,3 +430,96 @@ class InvoiceService {
 }
 
 module.exports = new InvoiceService();
+    `;
+  }
+}
+
+module.exports = new InvoiceService();
+    `;
+  }
+
+  /**
+   * @param {String} html - HTML content
+   * @returns {Buffer} PDF buffer
+   */
+  async generatePDF(html) {
+    let browser = null;
+    
+    try {
+      // Determine the correct Chrome executable path based on platform
+      const os = require('os');
+      const path = require('path');
+      let executablePath;
+      
+      const platform = os.platform();
+      if (platform === 'win32') {
+        executablePath = path.resolve(process.env.PUPPETEER_EXECUTABLE_PATH_WIN || './binaries/chrome-win64/chrome.exe');
+      } else if (platform === 'darwin') {
+        executablePath = path.resolve(process.env.PUPPETEER_EXECUTABLE_PATH_MAC || './binaries/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing');
+      } else if (platform === 'linux') {
+        executablePath = path.resolve(process.env.PUPPETEER_EXECUTABLE_PATH_LINUX || './binaries/chrome-linux64/chrome');
+      } else {
+        throw new Error(`Unsupported platform: ${platform}`);
+      }
+      
+      console.log(`Platform: ${platform}`);
+      console.log(`Using Chrome binary at: ${executablePath}`);
+      
+      // Check if the executable exists
+      const fs = require('fs');
+      if (!fs.existsSync(executablePath)) {
+        throw new Error(`Chrome executable not found at: ${executablePath}`);
+      }
+      
+      browser = await puppeteer.launch({
+        headless: 'new',
+        executablePath: executablePath,
+        args: [
+          '--no-sandbox', 
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu'
+        ]
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20mm',
+          right: '20mm',
+          bottom: '20mm',
+          left: '20mm'
+        }
+      });
+      
+      return pdfBuffer;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      throw new Error(`Failed to generate PDF: ${error.message}`);
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
+  }
+
+  /**
+   * Generate invoice PDF for an order
+   * @param {Object} order - Order object
+   * @param {Object} user - User object
+   * @returns {Buffer} PDF buffer
+   */
+  async generateInvoice(order, user) {
+    const html = this.generateInvoiceHTML(order, user);
+    return await this.generatePDF(html);
+  }
+}
+
+module.exports = new InvoiceService();

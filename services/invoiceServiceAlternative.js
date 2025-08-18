@@ -1,7 +1,6 @@
-const fs = require('fs').promises;
-const path = require('path');
+const { JSDOM } = require('jsdom');
 
-class InvoiceService {
+class InvoiceServiceAlternative {
   constructor() {
     this.companyInfo = {
       name: "Book Store",
@@ -13,16 +12,14 @@ class InvoiceService {
   }
 
   /**
-   * Generate invoice HTML template with i18n support
+   * Generate invoice HTML template (same as before)
    * @param {Object} order - Order object with all details
    * @param {Object} user - User object
-   * @param {String} language - Language code ('en' or 'ar')
    * @returns {String} HTML template
    */
-  generateInvoiceHTML(order, user, language = 'en') {
+  generateInvoiceHTML(order, user) {
     console.log('Generating invoice HTML for order:', order._id);
     console.log('User data received:', user);
-    console.log('Language:', language);
     
     const invoiceDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
     const orderId = order._id || order.id;
@@ -39,67 +36,13 @@ class InvoiceService {
     const tax = subtotal * 0.1; // 10% tax
     const total = order.total || subtotal + tax;
 
-    // RTL support for Arabic
-    const isRTL = language === 'ar';
-    const direction = isRTL ? 'rtl' : 'ltr';
-    const textAlign = isRTL ? 'right' : 'left';
-    const reverseAlign = isRTL ? 'left' : 'right';
-
-    // Translations
-    const translations = {
-      en: {
-        invoice: 'INVOICE',
-        invoiceNumber: 'Invoice #',
-        date: 'Date',
-        status: 'Status',
-        billTo: 'Bill To',
-        shipTo: 'Ship To',
-        item: 'Item',
-        qty: 'Qty',
-        unitPrice: 'Unit Price',
-        total: 'Total',
-        subtotal: 'Subtotal',
-        tax: 'Tax (10%)',
-        paymentInfo: 'Payment Information',
-        paymentMethod: 'Payment Method',
-        orderId: 'Order ID',
-        cashOnDelivery: 'Cash on Delivery',
-        bankTransfer: 'Bank Transfer',
-        thankYou: 'Thank you for your business!',
-        computerGenerated: 'This is a computer-generated invoice. No signature required.'
-      },
-      ar: {
-        invoice: 'فاتورة',
-        invoiceNumber: 'رقم الفاتورة',
-        date: 'التاريخ',
-        status: 'الحالة',
-        billTo: 'إرسال الفاتورة إلى',
-        shipTo: 'الشحن إلى',
-        item: 'العنصر',
-        qty: 'الكمية',
-        unitPrice: 'سعر الوحدة',
-        total: 'المجموع',
-        subtotal: 'المجموع الفرعي',
-        tax: 'الضريبة (10%)',
-        paymentInfo: 'معلومات الدفع',
-        paymentMethod: 'طريقة الدفع',
-        orderId: 'رقم الطلب',
-        cashOnDelivery: 'الدفع عند التسليم',
-        bankTransfer: 'تحويل بنكي',
-        thankYou: 'شكراً لك على تعاملك معنا!',
-        computerGenerated: 'هذه فاتورة مُولّدة بواسطة الكمبيوتر. لا توقيع مطلوب.'
-      }
-    };
-
-    const t = translations[language] || translations.en;
-
     return `
     <!DOCTYPE html>
-    <html lang="${language}" dir="${direction}">
+    <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${t.invoice} ${invoiceNumber}</title>
+        <title>Invoice ${invoiceNumber}</title>
         <style>
             * {
                 margin: 0;
@@ -108,12 +51,11 @@ class InvoiceService {
             }
             
             body {
-                font-family: ${isRTL ? "'Arial', 'Tahoma', 'DejaVu Sans', sans-serif" : "'Arial', sans-serif"};
+                font-family: 'Arial', sans-serif;
                 line-height: 1.6;
                 color: #333;
                 background: #fff;
-                direction: ${direction};
-                text-align: ${textAlign};
+                padding: 20px;
             }
             
             .invoice-container {
@@ -121,6 +63,7 @@ class InvoiceService {
                 margin: 0 auto;
                 padding: 40px;
                 background: white;
+                border: 1px solid #ddd;
             }
             
             .invoice-header {
@@ -130,35 +73,26 @@ class InvoiceService {
                 margin-bottom: 40px;
                 padding-bottom: 20px;
                 border-bottom: 3px solid #8e44ad;
-                ${isRTL ? 'flex-direction: row-reverse;' : ''}
-                gap: 60px;
             }
             
             .company-info {
                 flex: 1;
-                ${isRTL ? 'text-align: right;' : 'text-align: left;'}
-                min-width: 0;
-                max-width: 45%;
             }
             
             .company-info h1 {
                 color: #8e44ad;
                 font-size: 28px;
                 margin-bottom: 10px;
-                ${isRTL ? 'text-align: right;' : 'text-align: left;'}
             }
             
             .company-info p {
                 margin: 5px 0;
                 color: #666;
-                ${isRTL ? 'text-align: right;' : 'text-align: left;'}
             }
             
             .invoice-details {
+                text-align: right;
                 flex: 1;
-                ${isRTL ? 'text-align: left;' : 'text-align: right;'}
-                min-width: 0;
-                max-width: 45%;
             }
             
             .invoice-details h2 {
@@ -176,21 +110,17 @@ class InvoiceService {
                 margin: 30px 0;
                 display: flex;
                 justify-content: space-between;
-                ${isRTL ? 'flex-direction: row-reverse;' : ''}
-                gap: 20px;
             }
             
             .bill-to, .ship-to {
                 flex: 1;
-                ${isRTL ? 'text-align: right;' : 'text-align: left;'}
-                min-width: 0;
+                margin-right: 20px;
             }
             
             .bill-to h3, .ship-to h3 {
                 color: #8e44ad;
                 margin-bottom: 10px;
                 font-size: 18px;
-                ${isRTL ? 'text-align: right;' : 'text-align: left;'}
             }
             
             .customer-details p {
@@ -209,35 +139,30 @@ class InvoiceService {
                 background: #8e44ad;
                 color: white;
                 padding: 15px;
-                text-align: ${textAlign};
+                text-align: left;
                 font-weight: 600;
             }
             
             .items-table td {
                 padding: 12px 15px;
                 border-bottom: 1px solid #eee;
-                text-align: ${textAlign};
             }
             
             .items-table tr:nth-child(even) {
                 background: #f9f9f9;
             }
             
-            .items-table tr:hover {
-                background: #f5f5f5;
-            }
-            
             .text-right {
-                text-align: ${reverseAlign} !important;
+                text-align: right;
             }
             
             .text-center {
-                text-align: center !important;
+                text-align: center;
             }
             
             .totals-section {
                 margin-top: 30px;
-                float: ${reverseAlign};
+                float: right;
                 width: 300px;
             }
             
@@ -249,7 +174,6 @@ class InvoiceService {
             .totals-table td {
                 padding: 10px 15px;
                 border-bottom: 1px solid #eee;
-                text-align: ${textAlign};
             }
             
             .totals-table .total-row {
@@ -294,37 +218,6 @@ class InvoiceService {
                 border-top: 1px solid #ddd;
                 padding-top: 20px;
             }
-            
-            @media print {
-                .invoice-container {
-                    padding: 20px;
-                }
-                
-                .no-print {
-                    display: none !important;
-                }
-            }
-            
-            /* Mobile responsive for RTL */
-            @media (max-width: 768px) {
-                .invoice-header {
-                    flex-direction: column;
-                    gap: 20px;
-                }
-                
-                .invoice-details {
-                    ${isRTL ? 'text-align: right;' : 'text-align: left;'}
-                }
-                
-                .customer-section {
-                    flex-direction: column;
-                    gap: 20px;
-                }
-                
-                .bill-to, .ship-to {
-                    ${isRTL ? 'text-align: right;' : 'text-align: left;'}
-                }
-            }
         </style>
     </head>
     <body>
@@ -334,22 +227,22 @@ class InvoiceService {
                 <div class="company-info">
                     <h1>${this.companyInfo.name}</h1>
                     <p>${this.companyInfo.address}</p>
-                    <p>${isRTL ? 'الهاتف' : 'Phone'}: ${this.companyInfo.phone}</p>
-                    <p>${isRTL ? 'البريد الإلكتروني' : 'Email'}: ${this.companyInfo.email}</p>
-                    <p>${isRTL ? 'الموقع' : 'Website'}: ${this.companyInfo.website}</p>
+                    <p>Phone: ${this.companyInfo.phone}</p>
+                    <p>Email: ${this.companyInfo.email}</p>
+                    <p>Website: ${this.companyInfo.website}</p>
                 </div>
                 <div class="invoice-details">
-                    <h2>${t.invoice}</h2>
-                    <p><strong>${t.invoiceNumber}:</strong> ${invoiceNumber}</p>
-                    <p><strong>${t.date}:</strong> ${invoiceDate}</p>
-                    <p><strong>${t.status}:</strong> <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span></p>
+                    <h2>INVOICE</h2>
+                    <p><strong>Invoice #:</strong> ${invoiceNumber}</p>
+                    <p><strong>Date:</strong> ${invoiceDate}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span></p>
                 </div>
             </div>
             
             <!-- Customer Information -->
             <div class="customer-section">
                 <div class="bill-to">
-                    <h3>${t.billTo}:</h3>
+                    <h3>Bill To:</h3>
                     <div class="customer-details">
                         <p><strong>${userName}</strong></p>
                         <p>${userEmail}</p>
@@ -357,9 +250,9 @@ class InvoiceService {
                     </div>
                 </div>
                 <div class="ship-to">
-                    <h3>${t.shipTo}:</h3>
+                    <h3>Ship To:</h3>
                     <div class="customer-details">
-                        <p>${order.address ? order.address.street : (isRTL ? 'لا يوجد عنوان' : 'No address provided')}</p>
+                        <p>${order.address ? order.address.street : 'No address provided'}</p>
                         <p>${order.address ? order.address.region : ''}</p>
                         <p>${order.address ? order.address.descreption : ''}</p>
                     </div>
@@ -370,17 +263,17 @@ class InvoiceService {
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th>${t.item}</th>
-                        <th class="text-center">${t.qty}</th>
-                        <th class="text-right">${t.unitPrice}</th>
-                        <th class="text-right">${t.total}</th>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${(order.cart || []).map(item => `
                         <tr>
                             <td>
-                                <strong>${item.productId?.name || (isRTL ? 'منتج' : 'Product')}</strong>
+                                <strong>${item.productId?.name || 'Product'}</strong>
                                 <br>
                                 <small style="color: #666;">${item.productId?.description || ''}</small>
                             </td>
@@ -396,15 +289,15 @@ class InvoiceService {
             <div class="totals-section">
                 <table class="totals-table">
                     <tr>
-                        <td>${t.subtotal}:</td>
+                        <td>Subtotal:</td>
                         <td class="text-right">$${subtotal.toFixed(2)}</td>
                     </tr>
                     <tr>
-                        <td>${t.tax}:</td>
+                        <td>Tax (10%):</td>
                         <td class="text-right">$${tax.toFixed(2)}</td>
                     </tr>
                     <tr class="total-row">
-                        <td>${t.total}:</td>
+                        <td>Total:</td>
                         <td class="text-right">$${total.toFixed(2)}</td>
                     </tr>
                 </table>
@@ -412,21 +305,117 @@ class InvoiceService {
             
             <!-- Payment Information -->
             <div class="payment-info">
-                <h3>${t.paymentInfo}</h3>
-                <p><strong>${t.paymentMethod}:</strong> ${(order.methodePayment === 'cash') ? t.cashOnDelivery : t.bankTransfer}</p>
-                <p><strong>${t.orderId}:</strong> ${orderId || 'N/A'}</p>
+                <h3>Payment Information</h3>
+                <p><strong>Payment Method:</strong> ${(order.methodePayment === 'cash') ? 'Cash on Delivery' : 'Bank Transfer'}</p>
+                <p><strong>Order ID:</strong> ${orderId || 'N/A'}</p>
             </div>
             
             <!-- Footer -->
             <div class="footer">
-                <p>${t.thankYou}</p>
-                <p>${t.computerGenerated}</p>
+                <p>Thank you for your business!</p>
+                <p>This is a computer-generated invoice. No signature required.</p>
             </div>
         </div>
     </body>
     </html>
     `;
   }
+
+  /**
+   * Generate simple text-based invoice (fallback for areas with restrictions)
+   * @param {Object} order - Order object
+   * @param {Object} user - User object
+   * @returns {String} Text invoice
+   */
+  generateTextInvoice(order, user) {
+    const invoiceDate = new Date(order.createdAt || Date.now()).toLocaleDateString();
+    const orderId = order._id || order.id;
+    const invoiceNumber = `INV-${orderId ? orderId.toString().slice(-8).toUpperCase() : 'UNKNOWN'}`;
+    
+    const userData = user || {};
+    const userName = userData.name || 'Customer';
+    const userEmail = userData.email || 'No email provided';
+    const userPhone = userData.phone || 'No phone provided';
+    
+    const subtotal = order.cart ? order.cart.reduce((sum, item) => sum + (item.price * item.amount), 0) : 0;
+    const tax = subtotal * 0.1;
+    const total = order.total || subtotal + tax;
+
+    let textInvoice = `
+===============================================
+                INVOICE
+===============================================
+
+Company: ${this.companyInfo.name}
+Address: ${this.companyInfo.address}
+Phone: ${this.companyInfo.phone}
+Email: ${this.companyInfo.email}
+
+-----------------------------------------------
+
+Invoice #: ${invoiceNumber}
+Date: ${invoiceDate}
+Status: ${order.status.toUpperCase()}
+
+-----------------------------------------------
+BILL TO:
+${userName}
+${userEmail}
+${userPhone}
+
+-----------------------------------------------
+SHIP TO:
+${order.address ? order.address.street : 'No address provided'}
+${order.address ? order.address.region : ''}
+${order.address ? order.address.descreption : ''}
+
+-----------------------------------------------
+ITEMS:
+-----------------------------------------------
+`;
+
+    // Add items
+    (order.cart || []).forEach(item => {
+      const itemTotal = (item.price || 0) * (item.amount || 0);
+      textInvoice += `${item.productId?.name || 'Product'} x${item.amount || 0} @ $${(item.price || 0).toFixed(2)} = $${itemTotal.toFixed(2)}\n`;
+    });
+
+    textInvoice += `
+-----------------------------------------------
+Subtotal: $${subtotal.toFixed(2)}
+Tax (10%): $${tax.toFixed(2)}
+TOTAL: $${total.toFixed(2)}
+-----------------------------------------------
+
+Payment Method: ${(order.methodePayment === 'cash') ? 'Cash on Delivery' : 'Bank Transfer'}
+Order ID: ${orderId || 'N/A'}
+
+Thank you for your business!
+===============================================
+`;
+
+    return textInvoice;
+  }
+
+  /**
+   * Generate invoice without external dependencies
+   * @param {Object} order - Order object
+   * @param {Object} user - User object
+   * @param {String} format - 'html' or 'text'
+   * @returns {String} Invoice content
+   */
+  async generateInvoice(order, user, format = 'html') {
+    try {
+      if (format === 'text') {
+        return this.generateTextInvoice(order, user);
+      } else {
+        return this.generateInvoiceHTML(order, user);
+      }
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      throw new Error(`Failed to generate invoice: ${error.message}`);
+    }
+  }
 }
 
-module.exports = new InvoiceService();
+module.exports = new InvoiceServiceAlternative();
