@@ -17,6 +17,37 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Please enter total'],
     },
+    
+    // Promotion and Discount Fields
+    subtotal: {
+      type: Number,
+      required: [true, 'Please enter subtotal'],
+    },
+    discountAmount: {
+      type: Number,
+      default: 0
+    },
+    appliedPromotions: [{
+      promotionId: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Promotion'
+      },
+      promoCode: String,
+      discountAmount: Number,
+      discountType: String
+    }],
+    loyaltyPointsEarned: {
+      type: Number,
+      default: 0
+    },
+    loyaltyPointsUsed: {
+      type: Number,
+      default: 0
+    },
+    isFirstPurchase: {
+      type: Boolean,
+      default: false
+    },
     address: {
       // <creating-property-object-address />
       descreption: {
