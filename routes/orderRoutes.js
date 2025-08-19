@@ -9,7 +9,12 @@ router.use(protect);
 router
   .route('/')
   .get(restrictTo(USER, ADMIN), orderController.getAllOrder)
-  .post(restrictTo(USER, ADMIN), addVarBody("userId","userId"), orderController.createOrder); // FIXED: Allow both USER and ADMIN to create orders
+  .post(restrictTo(USER, ADMIN), addVarBody("userId","userId"), orderController.createOrderWithInventory); // UPDATED: Use inventory-aware creation
+
+// Legacy route for backward compatibility
+router
+  .route('/legacy')
+  .post(restrictTo(USER, ADMIN), addVarBody("userId","userId"), orderController.createOrder);
 router
  .route('/mien')
   .get(

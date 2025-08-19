@@ -16,14 +16,41 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Please enter price'],
     },
-    description: {
+    description_en: {
       type: String,
-      required: [true, 'Please enter description'],
+      required: [true, 'Please enter English description'],
+    },
+    description_ar: {
+      type: String,
+      required: [true, 'Please enter Arabic description'],
     },
     name: {
       type: String,
       required: [true, 'Please enter name'],
       unique: true,
+    },
+    stock: {
+      type: Number,
+      required: [true, 'Please enter stock quantity'],
+      min: [0, 'Stock cannot be negative'],
+      default: 0,
+    },
+    minStockLevel: {
+      type: Number,
+      required: [true, 'Please enter minimum stock level'],
+      min: [1, 'Minimum stock level must be at least 1'],
+      default: 5,
+    },
+    publisherEmail: {
+      type: String,
+      required: [false, 'Publisher email for reorder notifications'],
+      validate: {
+        validator: function(email) {
+          if (!email) return true; // Allow empty
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        },
+        message: 'Please enter a valid email address'
+      }
     },
   },
   { timestamps: true, versionKey: false },
