@@ -100,6 +100,7 @@ const userRouter = require('./routes/userRoutes');
 const publisherRouter = require('./routes/publisherRoutes');
 const notificationRouter = require('./routes/notificationRoutes');
 const promotionRouter = require('./routes/promotionRoutes');
+const recommendationRouter = require('./routes/recommendationRoutes');
 
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 //ROUTES <dont remove this line>
@@ -113,6 +114,7 @@ app.use('/api/v1.0.0/users', userRouter);
 app.use('/api/v1.0.0/publishers', publisherRouter);
 app.use('/api/v1.0.0/notifications', notificationRouter);
 app.use('/api/v1.0.0/promotions', promotionRouter);
+app.use('/api/v1.0.0/recommendations', recommendationRouter);
 //في حال طلب مورد غير موجود
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

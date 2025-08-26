@@ -97,6 +97,20 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    
+    // Recommendation System Tracking
+    lastLoginDate: {
+      type: Date,
+      default: null
+    },
+    lastRecommendationCheck: {
+      type: Date,
+      default: null
+    },
+    lastRecommendationSeen: {
+      type: Date,
+      default: null
+    },
   },
   { versionKey: false },
 );
@@ -177,6 +191,12 @@ userSchema.methods.hasUsedPromotion = function(promotionId) {
 };
 
 userSchema.methods.addPromotionUsage = function(promotionId) {
+  // Validate promotionId
+  if (!promotionId) {
+    console.warn('addPromotionUsage called with null/undefined promotionId');
+    return;
+  }
+  
   const existingUsage = this.usedPromotions.find(up => up.promotionId.toString() === promotionId.toString());
   
   if (existingUsage) {

@@ -17,6 +17,11 @@ router
   .route('/all')
   .get(productController.getAllProduct); // Original non-localized endpoint
 
+// Newest books route for news bar feature
+router
+  .route('/newest')
+  .get(productController.getNewestBooks); // Public route for displaying newest books
+
 // Inventory management routes
 router
   .route('/inventory/stats')
