@@ -10,13 +10,30 @@ const LoyaltyService = require('../services/loyaltyService');
 
 // Create order with inventory validation and promotion handling
 exports.createOrderWithInventory = catchAsync(async (req, res, next) => {
-  const { cart, appliedPromotions = [], promoCode, subtotal, ...orderData } = req.body;
+  const { cart, appliedPromotions = [], promoCode, subtotal: providedSubtotal, ...orderData } = req.body;
   const userId = req.user.id;
+  
+  // Validate cart
+  if (!cart || !Array.isArray(cart) || cart.length === 0) {
+    return next(new AppError('Cart is required and cannot be empty', 400));
+  }
   
   // Get user for loyalty calculations
   const user = await User.findById(userId);
   if (!user) {
     return next(new AppError('User not found', 404));
+  }
+  
+  // Calculate subtotal if not provided or invalid
+  let subtotal = providedSubtotal;
+  if (!subtotal || isNaN(subtotal) || subtotal <= 0) {
+    subtotal = 0;
+    for (const item of cart) {
+      if (!item.price || !item.amount || isNaN(item.price) || isNaN(item.amount)) {
+        return next(new AppError('Invalid cart item: price and amount must be valid numbers', 400));
+      }
+      subtotal += item.price * item.amount;
+    }
   }
   
   // Validate stock for all items in cart
@@ -104,21 +121,36 @@ exports.createOrderWithInventory = catchAsync(async (req, res, next) => {
   const tierBenefits = LoyaltyService.getTierBenefits(user.loyaltyTier);
   const loyaltyPointsEarned = Math.floor(subtotal * tierBenefits.pointsMultiplier);
   
+  // Validate all numeric values before creating order
+  if (isNaN(subtotal) || isNaN(totalDiscountAmount) || isNaN(finalTotal) || isNaN(loyaltyPointsEarned)) {
+    return next(new AppError('Invalid calculation: subtotal, discount, or loyalty points resulted in NaN', 500));
+  }
+  
+  // Ensure all promotion discount amounts are valid numbers
+  for (const promo of processedPromotions) {
+    if (isNaN(promo.discountAmount)) {
+      return next(new AppError(`Invalid discount amount for promotion ${promo.promoCode}`, 500));
+    }
+  }
+  
   // Create order
   const order = await Order.create({
     ...orderData,
     cart,
-    subtotal,
-    discountAmount: totalDiscountAmount,
-    total: finalTotal,
+    subtotal: Math.round(subtotal * 100) / 100, // Round to 2 decimal places
+    discountAmount: Math.round(totalDiscountAmount * 100) / 100,
+    total: Math.round(finalTotal * 100) / 100,
     appliedPromotions: processedPromotions,
-    loyaltyPointsEarned,
+    loyaltyPointsEarned: Math.max(0, loyaltyPointsEarned), // Ensure non-negative
     isFirstPurchase: !user.firstPurchaseCompleted,
     userId
   });
   
   // Reduce stock for all items
   for (const item of cart) {
+    if (!item.productId) {
+      return next(new AppError('Invalid cart item: missing productId', 400));
+    }
     await InventoryService.reduceStock(item.productId, item.amount);
   }
   
@@ -130,7 +162,7 @@ exports.createOrderWithInventory = catchAsync(async (req, res, next) => {
   
   // Update promotion analytics
   for (const promo of processedPromotions) {
-    if (promo.promotionId) {
+    if (promo.promotionId && promo.promotionId.toString && promo.promotionId.toString().length > 0) {
       await Promotion.findByIdAndUpdate(promo.promotionId, {
         $inc: {
           currentUsageCount: 1,

@@ -798,14 +798,35 @@ async function seedAllData() {
     // 8. Create Sample Orders (linked to users and products)
     console.log('\n🛒 Creating sample orders...');
     const orders = [];
-    for (let i = 0; i < 8; i++) {
+    
+    // Enhanced order creation with more purchase history per user
+    for (let i = 0; i < 25; i++) { // Increased from 8 to 25 orders
       const user = users[i % users.length];
       const numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items per order
       const cart = [];
       let total = 0;
 
+      // If it's a returning user (not the last user 'Alex NewReader'), bias toward certain categories
+      const isReturningUser = i % users.length < users.length - 1;
+      let biasedProducts = createdProducts;
+      
+      if (isReturningUser) {
+        const userIndex = i % (users.length - 1);
+        const categoryBias = ['Fiction', 'Romance', 'Mystery', 'Science Fiction'][userIndex % 4];
+        
+        // 70% chance to pick from preferred category, 30% random
+        if (Math.random() > 0.3) {
+          biasedProducts = createdProducts.filter(p => 
+            p.categoryId && createdCategories.find(c => 
+              c._id.equals(p.categoryId) && c.name === categoryBias
+            )
+          );
+          if (biasedProducts.length === 0) biasedProducts = createdProducts;
+        }
+      }
+
       for (let j = 0; j < numItems; j++) {
-        const product = createdProducts[Math.floor(Math.random() * createdProducts.length)];
+        const product = biasedProducts[Math.floor(Math.random() * biasedProducts.length)];
         const amount = Math.floor(Math.random() * 2) + 1; // 1-2 quantity
         cart.push({
           productId: product._id,
@@ -823,6 +844,9 @@ async function seedAllData() {
       const discountAmount = Math.random() > 0.7 ? subtotal * 0.1 : 0; // 30% chance of 10% discount
       const finalTotal = subtotal - discountAmount;
       
+      // Create orders with varied dates (some recent, some older)
+      const daysAgo = i < 10 ? Math.random() * 7 : Math.random() * 60; // Recent orders for first 10
+      
       orders.push({
         userId: user._id,
         cart: cart,
@@ -831,7 +855,7 @@ async function seedAllData() {
         total: finalTotal,
         loyaltyPointsEarned: Math.floor(finalTotal * 0.1), // 1 point per 10 units spent
         loyaltyPointsUsed: 0,
-        isFirstPurchase: Math.random() > 0.8, // 20% chance of being first purchase
+        isFirstPurchase: i === 0 ? true : Math.random() > 0.9, // Mostly false except first
         status: statuses[Math.floor(Math.random() * statuses.length)],
         methodePayment: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
         address: {
@@ -839,7 +863,7 @@ async function seedAllData() {
           region: 'Downtown',
           descreption: 'Near the central library'
         },
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Random date in last 30 days
+        createdAt: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
       });
     }
     const createdOrders = await Order.insertMany(orders);

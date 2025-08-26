@@ -77,8 +77,10 @@ class InventoryService {
       console.log(`🚨 LOW STOCK ALERT: ${product.name} - Stock: ${product.stock}, Min Level: ${product.minStockLevel}`);
       
       // If product has publisher email, send reorder notification
-      if (product.publisherEmail) {
+      if (product.publisherEmail && product.publisherEmail.trim()) {
         await this.sendReorderNotification(product);
+      } else {
+        console.log(`⚠️ No publisher email for ${product.name} - skipping reorder notification`);
       }
       
       // Here you can add other notification methods like:
@@ -94,8 +96,30 @@ class InventoryService {
   // Send email to publisher for reorder
   static async sendReorderNotification(product) {
     try {
+      // Validate inputs
+      if (!product || !product.name || !product.publisherEmail || !product.publisherEmail.trim()) {
+        console.error('Invalid product data for reorder notification:', {
+          hasProduct: !!product,
+          hasName: !!(product && product.name),
+          hasEmail: !!(product && product.publisherEmail)
+        });
+        return;
+      }
+      
       const subject = `Low Stock Alert - Reorder Request for "${product.name}"`;
-      const reorderQuantity = Math.max(product.minStockLevel * 3, 50); // Suggest reorder quantity
+      const reorderQuantity = Math.max((product.minStockLevel || 5) * 3, 50); // Suggest reorder quantity
+      
+      // For development, just log the notification instead of sending email
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📧 EMAIL NOTIFICATION (Dev Mode):`);
+        console.log(`   To: ${product.publisherEmail}`);
+        console.log(`   Subject: ${subject}`);
+        console.log(`   Product: ${product.name}`);
+        console.log(`   Current Stock: ${product.stock}`);
+        console.log(`   Suggested Reorder: ${reorderQuantity} units`);
+        console.log(`✅ Reorder notification logged for ${product.name}`);
+        return;
+      }
       
       const emailContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -141,7 +165,7 @@ class InventoryService {
       // Since we don't have a direct HTML email method, we'll use nodemailer directly
       const nodemailer = require('nodemailer');
       
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: process.env.EMAIL_PORT,
         auth: {

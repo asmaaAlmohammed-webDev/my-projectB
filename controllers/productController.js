@@ -46,6 +46,56 @@ exports.getAllProductsLocalized = catchAsync(async (req, res, next) => {
   });
 });
 
+// Get newest books for news bar
+exports.getNewestBooks = catchAsync(async (req, res, next) => {
+  const lang = req.query.lang || 'en';
+  const limit = parseInt(req.query.limit) || 10;
+  
+  const validLangs = ['en', 'ar'];
+  if (!validLangs.includes(lang)) {
+    return next(new AppError('Invalid language parameter. Use "en" or "ar"', 400));
+  }
+
+  // Get newest books sorted by creation date
+  const newestBooks = await Product.find()
+    .populate({
+      path: 'categoryId',
+      select: 'name'
+    })
+    .sort({ createdAt: -1 }) // Sort by newest first
+    .limit(limit)
+    .select('name price categoryId createdAt image description_en description_ar');
+
+  // Transform books to include localized description and formatted data
+  const localizedBooks = newestBooks.map(book => {
+    const bookObj = book.toObject();
+    
+    // Set localized description
+    if (lang === 'ar') {
+      bookObj.description = bookObj.description_ar || 'الترجمة قريباً';
+    } else {
+      bookObj.description = bookObj.description_en || 'Translation coming soon';
+    }
+    
+    // Remove the separate language fields from response
+    delete bookObj.description_en;
+    delete bookObj.description_ar;
+    
+    // Add formatted creation date for display
+    bookObj.arrivalDate = bookObj.createdAt;
+    
+    return bookObj;
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: localizedBooks.length,
+    data: {
+      newestBooks: localizedBooks,
+    },
+  });
+});
+
 // Get inventory statistics
 exports.getInventoryStats = catchAsync(async (req, res, next) => {
   const stats = await InventoryService.getInventoryStats();

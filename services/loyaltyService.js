@@ -43,7 +43,9 @@ class LoyaltyService {
       }
     };
     
-    return benefits[tier] || benefits.bronze;
+    // Ensure we always return valid benefits, default to bronze if tier is invalid
+    const validTier = tier && benefits[tier] ? tier : 'bronze';
+    return benefits[validTier];
   }
   
   // Update user after order completion
@@ -75,7 +77,10 @@ class LoyaltyService {
     
     // Track promotion usage
     appliedPromotions.forEach(promo => {
-      user.addPromotionUsage(promo.promotionId);
+      // Only track promotions that have valid promotion IDs (skip tier discounts)
+      if (promo.promotionId && promo.promotionId.toString && promo.promotionId.toString().length > 0) {
+        user.addPromotionUsage(promo.promotionId);
+      }
     });
     
     await user.save();
@@ -122,13 +127,25 @@ class LoyaltyService {
   
   // Calculate tier-based automatic discount
   static calculateTierDiscount(user, orderAmount) {
+    // Validate inputs
+    if (!user || !user.loyaltyTier || !orderAmount || isNaN(orderAmount) || orderAmount <= 0) {
+      return null;
+    }
+    
     const tierBenefits = this.getTierBenefits(user.loyaltyTier);
     
     if (tierBenefits.discount > 0) {
+      const discountAmount = (orderAmount * tierBenefits.discount) / 100;
+      
+      // Ensure discount amount is valid
+      if (isNaN(discountAmount)) {
+        return null;
+      }
+      
       return {
         type: 'tier_discount',
         percentage: tierBenefits.discount,
-        amount: (orderAmount * tierBenefits.discount) / 100,
+        amount: Math.round(discountAmount * 100) / 100, // Round to 2 decimal places
         tier: user.loyaltyTier
       };
     }
