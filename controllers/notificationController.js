@@ -83,13 +83,24 @@ exports.getLoginNotifications = catchAsync(async (req, res, next) => {
   // Get unread notifications with high priority or promotions
   const notifications = await Notification.getUnreadForUser(userId, userRole);
   
-  // Filter for login-relevant notifications
-  const loginNotifications = notifications.filter(notification => 
-    notification.priority === 'high' || 
-    notification.priority === 'urgent' ||
-    notification.type === 'promotion' ||
-    notification.type === 'discount'
-  );
+  // Filter for login-relevant notifications based on user role
+  let loginNotifications;
+  if (userRole === 'ADMIN') {
+    // Admin users should only see system notifications and admin-specific alerts
+    loginNotifications = notifications.filter(notification => 
+      notification.priority === 'urgent' ||
+      notification.type === 'system' ||
+      (notification.type === 'general' && notification.priority === 'high')
+    );
+  } else {
+    // Regular users see promotions and high priority notifications
+    loginNotifications = notifications.filter(notification => 
+      notification.priority === 'high' || 
+      notification.priority === 'urgent' ||
+      notification.type === 'promotion' ||
+      notification.type === 'discount'
+    );
+  }
   
   res.status(200).json({
     status: 'success',

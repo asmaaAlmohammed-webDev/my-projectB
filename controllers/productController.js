@@ -3,6 +3,7 @@ const AppError = require('../utils/appError');
 const handlerFactory = require('../utils/handlerFactory');
 const catchAsync = require('../utils/catchAsync');
 const InventoryService = require('../services/inventoryService');
+const KMeansService = require('../services/kmeansService');
 
 // Custom controller for localized products
 exports.getAllProductsLocalized = catchAsync(async (req, res, next) => {
@@ -165,3 +166,60 @@ exports.createProduct = handlerFactory.createOne(Product);
 exports.updateProduct = handlerFactory.updateOne(Product);
 exports.deleteProduct = handlerFactory.deleteOne(Product);
 exports.getAllProduct = handlerFactory.getAll(Product);
+
+// K-Means based product similarity recommendations
+exports.getSimilarProducts = catchAsync(async (req, res, next) => {
+  const productId = req.params.id;
+  const limit = parseInt(req.query.limit) || 6;
+  const lang = req.query.lang || 'en';
+  
+  if (!productId) {
+    return next(new AppError('Product ID is required', 400));
+  }
+  
+  // Get similar products using K-means clustering
+  const similarProducts = await KMeansService.findSimilarProducts(productId, limit);
+  
+  // Localize descriptions
+  const localizedProducts = similarProducts.map(product => {
+    const productObj = { ...product };
+    
+    // Set localized description
+    if (lang === 'ar') {
+      productObj.description = productObj.description_ar || 'الترجمة قريباً';
+    } else {
+      productObj.description = productObj.description_en || 'Translation coming soon';
+    }
+    
+    // Remove separate language fields from response
+    delete productObj.description_en;
+    delete productObj.description_ar;
+    
+    return productObj;
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    results: localizedProducts.length,
+    data: {
+      products: localizedProducts,
+      algorithm: 'k-means-clustering',
+      message: localizedProducts.length > 0 
+        ? `Found ${localizedProducts.length} similar products using AI clustering`
+        : 'No similar products found'
+    }
+  });
+});
+
+// Admin endpoint to manually trigger clustering update
+exports.updateProductClusters = catchAsync(async (req, res, next) => {
+  const clusterStats = await KMeansService.updateProductClusters();
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message: 'Product clusters updated successfully',
+      stats: clusterStats
+    }
+  });
+});

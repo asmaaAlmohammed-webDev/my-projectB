@@ -6,3 +6,8 @@ yarn-error.log
 
 # Code coverage
 coverage
+
+# ERD generation (temporary files)
+temp-erd/
+generate-erd.js
+mongodb-erd.*

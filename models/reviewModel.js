@@ -12,6 +12,11 @@ const reviewSchema = new mongoose.Schema(
       max: 5,
       required: [true, 'Please enter rate'],
     },
+    productId: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Product',
+      required: [true, 'Please enter product'],
+    },
     userId: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
@@ -25,9 +30,16 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'userId',
-    select: '-_id',
+    select: 'name email photo',
+  }).populate({
+    path: 'productId',
+    select: 'name price image',
   });
   next();
 });
+
+// Create compound index to prevent duplicate reviews from same user for same product
+reviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
+
 const Review = mongoose.model('Review', reviewSchema);
 module.exports = Review;

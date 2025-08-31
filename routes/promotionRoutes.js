@@ -14,6 +14,7 @@ router.use(protect);
 
 router.get('/user/:userId', promotionController.getUserPromotions);
 router.get('/user', promotionController.getUserPromotions); // Uses req.user.id
+router.get('/auto', promotionController.getAutoPromotions); // Get auto-applicable promotions
 router.post('/apply', promotionController.applyPromotion);
 router.get('/loyalty', promotionController.getLoyaltyPromotions);
 

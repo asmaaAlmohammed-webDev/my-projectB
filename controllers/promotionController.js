@@ -14,6 +14,25 @@ exports.getUserPromotions = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('User not found', 404));
   }
+
+  // Admin users should not receive customer promotions
+  if (user.role === 'ADMIN') {
+    return res.status(200).json({
+      status: 'success',
+      results: 0,
+      data: {
+        promotions: [],
+        userInfo: {
+          loyaltyTier: user.loyaltyTier,
+          loyaltyPoints: user.loyaltyPoints,
+          totalSpent: user.totalSpent,
+          orderCount: user.orderCount,
+          firstPurchaseCompleted: user.firstPurchaseCompleted
+        },
+        message: 'Admin users do not receive customer promotions'
+      }
+    });
+  }
   
   const promotions = await Promotion.getActivePromotionsForUser(user, orderAmount);
   
@@ -42,6 +61,17 @@ exports.applyPromotion = catchAsync(async (req, res, next) => {
     return next(new AppError('Promo code and order amount are required', 400));
   }
   
+  // Get user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  // Admin users should not be able to apply customer promotions
+  if (user.role === 'ADMIN') {
+    return next(new AppError('Admin users cannot apply customer promotions', 403));
+  }
+  
   // Find promotion by code
   const promotion = await Promotion.findOne({ 
     promoCode: promoCode.toUpperCase(),
@@ -50,12 +80,6 @@ exports.applyPromotion = catchAsync(async (req, res, next) => {
   
   if (!promotion) {
     return next(new AppError('Invalid promo code', 400));
-  }
-  
-  // Get user
-  const user = await User.findById(userId);
-  if (!user) {
-    return next(new AppError('User not found', 404));
   }
   
   // Check if user is eligible
@@ -103,6 +127,17 @@ exports.getFirstTimeBuyerPromotions = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
     
+    // Admin users should not receive customer promotions
+    if (user && user.role === 'ADMIN') {
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          promotions: [],
+          message: 'Admin users do not receive customer promotions'
+        }
+      });
+    }
+    
     if (user && user.firstPurchaseCompleted) {
       return res.status(200).json({
         status: 'success',
@@ -140,6 +175,20 @@ exports.getLoyaltyPromotions = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('User not found', 404));
   }
+
+  // Admin users should not receive customer promotions
+  if (user.role === 'ADMIN') {
+    return res.status(200).json({
+      status: 'success',
+      results: 0,
+      data: {
+        promotions: [],
+        userTier: user.loyaltyTier,
+        loyaltyPoints: user.loyaltyPoints,
+        message: 'Admin users do not receive customer promotions'
+      }
+    });
+  }
   
   const promotions = await Promotion.find({
     type: 'loyalty_tier',
@@ -169,6 +218,17 @@ exports.validatePromotion = catchAsync(async (req, res, next) => {
     return next(new AppError('Promo code is required', 400));
   }
   
+  // Get user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  // Admin users should not be able to validate customer promotions
+  if (user.role === 'ADMIN') {
+    return next(new AppError('Admin users cannot validate customer promotions', 403));
+  }
+  
   const promotion = await Promotion.findOne({ 
     promoCode: promoCode.toUpperCase(),
     isActive: true 
@@ -178,7 +238,6 @@ exports.validatePromotion = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid or expired promo code', 400));
   }
   
-  const user = await User.findById(userId);
   if (!promotion.isUserEligible(user, subtotal)) {
     return next(new AppError('You are not eligible for this promotion', 400));
   }
@@ -232,10 +291,14 @@ exports.getAllPromotions = catchAsync(async (req, res, next) => {
   
   const filter = {};
   
-  // Apply filters
-  if (req.query.type) filter.type = req.query.type;
-  if (req.query.isActive !== undefined) filter.isActive = req.query.isActive === 'true';
-  if (req.query.search) {
+  // Apply filters - handle empty strings properly
+  if (req.query.type && req.query.type.trim() !== '') {
+    filter.type = req.query.type;
+  }
+  if (req.query.isActive !== undefined && req.query.isActive !== '' && req.query.isActive !== null) {
+    filter.isActive = req.query.isActive === 'true';
+  }
+  if (req.query.search && req.query.search.trim() !== '') {
     filter.$or = [
       { name: { $regex: req.query.search, $options: 'i' } },
       { promoCode: { $regex: req.query.search, $options: 'i' } }
@@ -301,6 +364,29 @@ exports.getPromotionAnalytics = catchAsync(async (req, res, next) => {
         totalDiscount: 0
       },
       byType: typeStats
+    }
+  });
+});
+
+// Get auto-applicable promotions for a user
+exports.getAutoPromotions = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  const orderAmount = parseFloat(req.query.orderAmount) || 0;
+  
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+  
+  // Get auto-applicable promotions
+  const LoyaltyService = require('../services/loyaltyService');
+  const autoPromotions = await LoyaltyService.getAutoPromotions(userId, orderAmount);
+  
+  res.status(200).json({
+    status: 'success',
+    results: autoPromotions.length,
+    data: {
+      autoPromotions
     }
   });
 });

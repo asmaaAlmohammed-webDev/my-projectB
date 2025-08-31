@@ -35,9 +35,19 @@ router
   .route('/inventory/out-of-stock')
   .get(protect, restrictTo(ADMIN), productController.getOutOfStockProducts);
 
+// K-Means clustering routes
+router
+  .route('/clusters/update')
+  .post(protect, restrictTo(ADMIN), productController.updateProductClusters);
+
 router
   .route('/:id/stock')
   .patch(protect, restrictTo(ADMIN), productController.updateStock);
+
+// Similar products route (using K-means clustering)
+router
+  .route('/:id/similar')
+  .get(productController.getSimilarProducts);
 
 router
   .route('/:id')
