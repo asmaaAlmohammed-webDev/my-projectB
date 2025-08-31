@@ -168,6 +168,27 @@ notificationSchema.methods.markAsReadByUser = function(userId) {
 notificationSchema.statics.getActiveForUser = function(userId, userRole) {
   const now = new Date();
   
+  // Admin users should only see admin-specific notifications, not customer promotions
+  let targetConditions;
+  if (userRole === 'ADMIN') {
+    targetConditions = {
+      $or: [
+        { targetUsers: 'role-based', targetRoles: 'ADMIN' },
+        { targetUsers: 'specific', specificUsers: userId },
+        // Only show system notifications to admins, not customer promotions
+        { targetUsers: 'all', type: { $in: ['system', 'general'] } }
+      ]
+    };
+  } else {
+    targetConditions = {
+      $or: [
+        { targetUsers: 'all', type: { $nin: ['system'] } }, // Exclude admin-only system notifications
+        { targetUsers: 'specific', specificUsers: userId },
+        { targetUsers: 'role-based', targetRoles: userRole }
+      ]
+    };
+  }
+  
   return this.find({
     isActive: true,
     $or: [
@@ -178,11 +199,7 @@ notificationSchema.statics.getActiveForUser = function(userId, userRole) {
       { endDate: { $exists: false } },
       { endDate: { $gte: now } }
     ],
-    $or: [
-      { targetUsers: 'all' },
-      { targetUsers: 'specific', specificUsers: userId },
-      { targetUsers: 'role-based', targetRoles: userRole }
-    ]
+    ...targetConditions
   })
   .populate('createdBy', 'name')
   .sort({ priority: -1, createdAt: -1 });

@@ -786,11 +786,12 @@ async function seedAllData() {
     const createdProducts = await Product.insertMany(products);
     console.log(`✅ Created ${createdProducts.length} products`);
 
-    // 7. Create Reviews (linked to users)
+    // 7. Create Reviews (linked to users and products)
     console.log('\n⭐ Creating reviews...');
     const reviews = reviewsTemplate.map(reviewTemplate => ({
       ...reviewTemplate,
-      userId: users[Math.floor(Math.random() * users.length)]._id
+      userId: users[Math.floor(Math.random() * users.length)]._id,
+      productId: createdProducts[Math.floor(Math.random() * createdProducts.length)]._id
     }));
     const createdReviews = await Review.insertMany(reviews);
     console.log(`✅ Created ${createdReviews.length} reviews`);
