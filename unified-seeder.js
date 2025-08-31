@@ -788,11 +788,35 @@ async function seedAllData() {
 
     // 7. Create Reviews (linked to users and products)
     console.log('\n⭐ Creating reviews...');
-    const reviews = reviewsTemplate.map(reviewTemplate => ({
-      ...reviewTemplate,
-      userId: users[Math.floor(Math.random() * users.length)]._id,
-      productId: createdProducts[Math.floor(Math.random() * createdProducts.length)]._id
-    }));
+    
+    // Generate unique user-product combinations to avoid duplicate key errors
+    const usedCombinations = new Set();
+    const reviews = [];
+    
+    for (const reviewTemplate of reviewsTemplate) {
+      let userId, productId, combination;
+      let attempts = 0;
+      const maxAttempts = 100; // Prevent infinite loop
+      
+      do {
+        userId = users[Math.floor(Math.random() * users.length)]._id;
+        productId = createdProducts[Math.floor(Math.random() * createdProducts.length)]._id;
+        combination = `${userId}_${productId}`;
+        attempts++;
+      } while (usedCombinations.has(combination) && attempts < maxAttempts);
+      
+      if (attempts < maxAttempts) {
+        usedCombinations.add(combination);
+        reviews.push({
+          ...reviewTemplate,
+          userId,
+          productId
+        });
+      } else {
+        console.log(`⚠️  Skipping review - couldn't find unique user-product combination after ${maxAttempts} attempts`);
+      }
+    }
+    
     const createdReviews = await Review.insertMany(reviews);
     console.log(`✅ Created ${createdReviews.length} reviews`);
 
