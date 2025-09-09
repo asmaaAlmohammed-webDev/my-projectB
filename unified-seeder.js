@@ -83,42 +83,42 @@ const publishers = [
 const categories = [
   {
     name: 'Fiction',
-    descrption: 'Fictional stories and novels',
+    description: 'Fictional stories and novels', // FIXED: Correct field name
     photo: 'fiction.jpg'
   },
   {
     name: 'Romance',
-    descrption: 'Love stories and romantic novels',
+    description: 'Love stories and romantic novels', // FIXED: Correct field name
     photo: 'romance.jpg'
   },
   {
     name: 'Mystery',
-    descrption: 'Mystery and thriller books',
+    description: 'Mystery and thriller books', // FIXED: Correct field name
     photo: 'mystery.jpg'
   },
   {
     name: 'Science Fiction',
-    descrption: 'Science fiction and fantasy books',
+    description: 'Science fiction and fantasy books', // FIXED: Correct field name
     photo: 'scifi.jpg'
   },
   {
     name: 'Biography',
-    descrption: 'Biographies and memoirs',
+    description: 'Biographies and memoirs', // FIXED: Correct field name
     photo: 'biography.jpg'
   },
   {
     name: 'History',
-    descrption: 'Historical books and documentaries',
+    description: 'Historical books and documentaries', // FIXED: Correct field name
     photo: 'history.jpg'
   },
   {
     name: 'Self Help',
-    descrption: 'Personal development and self-improvement',
+    description: 'Personal development and self-improvement', // FIXED: Correct field name
     photo: 'selfhelp.jpg'
   },
   {
     name: 'Technology',
-    descrption: 'Programming, AI, and technology books',
+    description: 'Programming, AI, and technology books', // FIXED: Correct field name
     photo: 'technology.jpg'
   }
 ];
@@ -137,7 +137,8 @@ const sampleUsers = [
     loyaltyPoints: 250,
     totalSpent: 320,
     orderCount: 5,
-    firstPurchaseCompleted: true
+    firstPurchaseCompleted: true,
+    lastLoginDate: new Date() // Today - active user
   },
   {
     name: 'Sarah Bookworm',
@@ -149,7 +150,8 @@ const sampleUsers = [
     loyaltyPoints: 750,
     totalSpent: 650,
     orderCount: 12,
-    firstPurchaseCompleted: true
+    firstPurchaseCompleted: true,
+    lastLoginDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
   },
   {
     name: 'Mike Literature',
@@ -161,7 +163,8 @@ const sampleUsers = [
     loyaltyPoints: 50,
     totalSpent: 45,
     orderCount: 2,
-    firstPurchaseCompleted: true
+    firstPurchaseCompleted: true,
+    lastLoginDate: new Date() // Today - active user
   },
   {
     name: 'Emily Stories',
@@ -173,7 +176,8 @@ const sampleUsers = [
     loyaltyPoints: 1500,
     totalSpent: 1200,
     orderCount: 25,
-    firstPurchaseCompleted: true
+    firstPurchaseCompleted: true,
+    lastLoginDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 1 week ago
   },
   {
     name: 'Alex NewReader',
@@ -185,7 +189,8 @@ const sampleUsers = [
     loyaltyPoints: 0,
     totalSpent: 0,
     orderCount: 0,
-    firstPurchaseCompleted: false
+    firstPurchaseCompleted: false,
+    lastLoginDate: null // Never logged in - new user
   }
 ];
 
@@ -197,10 +202,12 @@ const productsTemplate = [
   // Popular Books (first 5) - matching PopularBooksData.jsx images and descriptions
   {
     name: 'Shadows of the Past',
+    author_en: 'Emily Carter',
+    author_ar: 'إميلي كارتر',
     description_en: 'Unravel secrets hidden deep within a mysterious forest.',
     description_ar: 'اكتشف الأسرار المخفية في أعماق غابة غامضة.',
     price: 15.00,
-    image: 'book_14.png', // Original popular book #1
+    image: 'book_14.png',
     categoryName: 'Fiction',
     stock: 25,
     minStockLevel: 5,
@@ -208,10 +215,12 @@ const productsTemplate = [
   },
   {
     name: 'Eternal Love',
+    author_en: 'Sophia Bennett',
+    author_ar: 'صوفيا بينيت',
     description_en: 'A heartwarming romance that transcends time and space.',
     description_ar: 'قصة حب دافئة تتجاوز الزمان والمكان.',
     price: 5.00,
-    image: 'book_4.png', // Original popular book #2
+    image: 'book_4.png',
     categoryName: 'Romance',
     stock: 40,
     minStockLevel: 8,
@@ -219,44 +228,52 @@ const productsTemplate = [
   },
   {
     name: 'Toy Adventures',
+    author_en: 'James Lee',
+    author_ar: 'جيمس لي',
     description_en: 'Follow a group of toys on their magical adventures.',
     description_ar: 'تابع مجموعة من الألعاب في مغامراتها السحرية.',
     price: 10.00,
-    image: 'book_5.png', // Original popular book #3
+    image: 'book_5.png',
     categoryName: 'Fiction',
-    stock: 3, // Low stock for demo
+    stock: 3,
     minStockLevel: 5,
     publisherName: 'Penguin Random House'
   },
   {
     name: 'Animal Wisdom',
+    author_en: 'Linda Green',
+    author_ar: 'ليندا جرين',
     description_en: 'A delightful story about animals who share their wisdom.',
     description_ar: 'قصة ممتعة عن الحيوانات التي تشارك حكمتها.',
     price: 15.00,
-    image: 'book_12.png', // Original popular book #4
+    image: 'book_12.png',
     categoryName: 'Fiction',
     stock: 18,
     minStockLevel: 6,
     publisherName: 'Macmillan Publishers'
   },
   {
-    name: 'Giant\'s Treasure',
+    name: "Giant's Treasure",
+    author_en: 'Robert King',
+    author_ar: 'روبرت كينج',
     description_en: 'An exciting journey to outsmart a giant and find treasure.',
     description_ar: 'رحلة مثيرة للتغلب على عملاق والعثور على الكنز.',
     price: 10.00,
-    image: 'book_16.png', // Original popular book #5
+    image: 'book_16.png',
     categoryName: 'Fiction',
-    stock: 0, // Out of stock for demo
+    stock: 0,
     minStockLevel: 4,
     publisherName: 'Simon & Schuster'
   },
-  // New Arrivals (last 4) - matching NewArrivalsData.jsx images and descriptions  
+  // New Arrivals (last 4)
   {
     name: 'Survival Tale',
+    author_en: 'Mark Evans',
+    author_ar: 'مارك إيفانز',
     description_en: 'A gripping tale of survival in uncharted lands.',
     description_ar: 'حكاية مثيرة عن البقاء في أراضٍ مجهولة.',
     price: 18.99,
-    image: 'book_11.png', // Original new arrival #1
+    image: 'book_11.png',
     categoryName: 'Fiction',
     stock: 15,
     minStockLevel: 5,
@@ -264,21 +281,25 @@ const productsTemplate = [
   },
   {
     name: 'Enchanted Stories',
+    author_en: 'Olivia Martin',
+    author_ar: 'أوليفيا مارتن',
     description_en: 'A collection of enchanting stories full of wonder.',
     description_ar: 'مجموعة من القصص الساحرة المليئة بالعجائب.',
     price: 14.50,
-    image: 'book_13.png', // Original new arrival #2
+    image: 'book_13.png',
     categoryName: 'Fiction',
-    stock: 2, // Low stock
+    stock: 2,
     minStockLevel: 6,
     publisherName: 'Penguin Random House'
   },
   {
     name: 'Time Journey',
+    author_en: 'Daniel Foster',
+    author_ar: 'دانيال فوستر',
     description_en: 'Embark on a journey through time to save humanity.',
     description_ar: 'انطلق في رحلة عبر الزمن لإنقاذ البشرية.',
     price: 22.00,
-    image: 'book_18.png', // Original new arrival #3
+    image: 'book_18.png',
     categoryName: 'Science Fiction',
     stock: 12,
     minStockLevel: 4,
@@ -286,10 +307,12 @@ const productsTemplate = [
   },
   {
     name: 'Forest Secrets',
+    author_en: 'Rachel Adams',
+    author_ar: 'راشيل آدامز',
     description_en: 'Unravel secrets hidden deep within a mysterious forest.',
     description_ar: 'اكتشف الأسرار المخفية في أعماق غابة غامضة.',
     price: 19.99,
-    image: 'book_22.png', // Original new arrival #4
+    image: 'book_22.png',
     categoryName: 'Mystery',
     stock: 8,
     minStockLevel: 5,
@@ -298,6 +321,8 @@ const productsTemplate = [
   // Additional Books
   {
     name: 'The Great Gatsby',
+    author_en: 'F. Scott Fitzgerald',
+    author_ar: 'إف. سكوت فيتزجيرالد',
     description_en: 'A classic American novel set in the Jazz Age',
     description_ar: 'رواية أمريكية كلاسيكية تدور أحداثها في عصر الجاز',
     price: 15.99,
@@ -309,6 +334,8 @@ const productsTemplate = [
   },
   {
     name: 'To Kill a Mockingbird',
+    author_en: 'Harper Lee',
+    author_ar: 'هاربر لي',
     description_en: 'A powerful story of racial injustice and childhood',
     description_ar: 'قصة قوية عن الظلم العنصري والطفولة',
     price: 14.50,
@@ -317,7 +344,9 @@ const productsTemplate = [
   },
   {
     name: 'Pride and Prejudice',
-    description_en: 'Jane Austen\'s beloved romantic classic',
+    author_en: 'Jane Austen',
+    author_ar: 'جين أوستن',
+    description_en: "Jane Austen's beloved romantic classic",
     description_ar: 'تحفة جين أوستن الرومانسية المحبوبة',
     price: 12.99,
     image: 'book_3.png',
@@ -325,6 +354,8 @@ const productsTemplate = [
   },
   {
     name: 'Gone Girl',
+    author_en: 'Gillian Flynn',
+    author_ar: 'جيليان فلين',
     description_en: 'A psychological thriller about a missing wife',
     description_ar: 'رواية نفسية مثيرة عن زوجة مفقودة',
     price: 15.25,
@@ -334,6 +365,8 @@ const productsTemplate = [
   // Science Fiction Books
   {
     name: 'Dune',
+    author_en: 'Frank Herbert',
+    author_ar: 'فرانك هربرت',
     description_en: 'Epic space opera set on the desert planet Arrakis',
     description_ar: 'ملحمة فضائية عظيمة تدور على كوكب أراكيس الصحراوي',
     price: 18.99,
@@ -342,6 +375,8 @@ const productsTemplate = [
   },
   {
     name: 'The Martian',
+    author_en: 'Andy Weir',
+    author_ar: 'آندي وير',
     description_en: 'Survival story of an astronaut stranded on Mars',
     description_ar: 'قصة بقاء رائد فضاء عالق على المريخ',
     price: 14.99,
@@ -351,7 +386,9 @@ const productsTemplate = [
   // Biography Books
   {
     name: 'Steve Jobs',
-    description_en: 'The official biography of Apple\'s co-founder',
+    author_en: 'Walter Isaacson',
+    author_ar: 'والتر إيزاكسون',
+    description_en: "The official biography of Apple's co-founder",
     description_ar: 'السيرة الذاتية الرسمية لمؤسس شركة أبل',
     price: 19.99,
     image: 'book_9.png',
@@ -359,7 +396,9 @@ const productsTemplate = [
   },
   {
     name: 'Becoming',
-    description_en: 'Michelle Obama\'s inspiring memoir',
+    author_en: 'Michelle Obama',
+    author_ar: 'ميشيل أوباما',
+    description_en: "Michelle Obama's inspiring memoir",
     description_ar: 'مذكرات ميشيل أوباما الملهمة',
     price: 17.50,
     image: 'book_10.png',
@@ -368,6 +407,8 @@ const productsTemplate = [
   // Technology Books
   {
     name: 'Clean Code',
+    author_en: 'Robert C. Martin',
+    author_ar: 'روبرت سي. مارتن',
     description_en: 'A handbook of agile software craftsmanship',
     description_ar: 'دليل لحرفية البرمجيات المرنة',
     price: 24.99,
@@ -376,6 +417,8 @@ const productsTemplate = [
   },
   {
     name: 'The Pragmatic Programmer',
+    author_en: 'Andrew Hunt & David Thomas',
+    author_ar: 'أندرو هانت وديفيد توماس',
     description_en: 'Your journey to mastery in programming',
     description_ar: 'رحلتك نحو إتقان البرمجة',
     price: 22.75,
@@ -767,17 +810,18 @@ async function seedAllData() {
     for (const productTemplate of productsTemplate) {
       const category = createdCategories.find(cat => cat.name === productTemplate.categoryName);
       const publisher = createdPublishers.find(pub => pub.name === productTemplate.publisherName);
-      
       if (category) {
         const product = {
           name: productTemplate.name,
+          author_en: productTemplate.author_en,
+          author_ar: productTemplate.author_ar,
           description_en: productTemplate.description_en,
           description_ar: productTemplate.description_ar,
           price: productTemplate.price,
           image: productTemplate.image,
           categoryId: category._id,
-          stock: productTemplate.stock || Math.floor(Math.random() * 50) + 10, // Random stock 10-60 if not specified
-          minStockLevel: productTemplate.minStockLevel || Math.floor(Math.random() * 5) + 3, // Random min level 3-8 if not specified
+          stock: productTemplate.stock || Math.floor(Math.random() * 50) + 10,
+          minStockLevel: productTemplate.minStockLevel || Math.floor(Math.random() * 5) + 3,
           publisherEmail: publisher ? publisher.email : undefined
         };
         products.push(product);

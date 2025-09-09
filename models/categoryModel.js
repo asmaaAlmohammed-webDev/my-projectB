@@ -5,15 +5,16 @@ const categorySchema = new mongoose.Schema(
     // <creating-property-schema />
     photo: {
       type: String,
-      required: [true, 'Please enter photo'],
+      required: [false, 'Photo is optional'], // FIXED: Make photo optional
     },
-    descrption: {
+    description: { // FIXED: Correct spelling from 'descrption' to 'description'
       type: String,
-      required: [true, 'Please enter descrption'],
+      required: [true, 'Please enter description'],
     },
     name: {
       type: String,
       required: [true, 'Please enter name'],
+      unique: true, // ADDED: Ensure category names are unique
     },
   },
   { timestamps: true, versionKey: false },

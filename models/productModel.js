@@ -2,10 +2,19 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema(
   {
     // <creating-property-schema />
+  // author field removed; use author_en and author_ar only
     categoryId: {
       type: mongoose.Schema.ObjectId,
       ref: 'Category',
       required: [true, 'Please enter category'],
+    },
+    author_en: {
+      type: String,
+      required: [true, 'A product must have an English author name']
+    },
+    author_ar: {
+      type: String,
+      required: [true, 'A product must have an Arabic author name']
     },
     image: {
       type: String,

@@ -31,7 +31,7 @@ router
 
 router
   .route('/product/:productId/check')
-  .get(restrictTo(USER), reviewController.checkUserProductReview);
+  .get(restrictTo(USER, ADMIN), reviewController.checkUserProductReview);
 
 // Generic review management routes
 router
