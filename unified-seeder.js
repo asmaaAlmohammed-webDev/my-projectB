@@ -573,9 +573,9 @@ const notifications = [
   },
   {
     title: 'Summer Reading Sale!',
-    message: 'Hot deals on fiction books - 25% off with code SUMMER25!',
+    message: 'Hot deals on all books - 25% off with code SUMMER25!',
     titleAr: 'تخفيضات القراءة الصيفية!',
-    messageAr: 'عروض رائعة على كتب الخيال - خصم 25% برمز SUMMER25!',
+    messageAr: 'عروض رائعة على جميع الكتب - خصم 25% برمز SUMMER25!',
     type: 'promotion',
     priority: 'high',
     isActive: true,
@@ -698,7 +698,7 @@ const promotions = [
   },
   {
     name: 'Summer Reading Sale',
-    description: 'Hot summer deals - 25% off all fiction books!',
+    description: 'Hot summer deals - 25% off all books!',
     type: 'special_campaign',
     discountType: 'percentage',
     discountValue: 25,
